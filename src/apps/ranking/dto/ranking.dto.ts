@@ -25,9 +25,7 @@ class CrawlCommon {
   @IsNotEmpty({ message: '请选择是否开启代理' })
   useProxy!: string;
 
-  @IsString()
-  @IsNotEmpty({ message: '请输入代理端口号' })
-  port!: string;
+  port?: string;
 }
 
 // 爬虫验证排行榜分类

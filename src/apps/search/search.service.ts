@@ -57,7 +57,7 @@ export class SearchService {
     }
 
     const headlessBoolean = !(headless === 'false' ? false : Boolean(headless));
-    const useProxyBoolean = !(useProxy === 'false' ? false : Boolean(useProxy));
+    const useProxyBoolean = useProxy === 'false' ? false : Boolean(useProxy);
 
     // 日志文件路径
     const logFolderPath = `C:/Users/${process.env.USERNAME}/AppData/Local/log`;

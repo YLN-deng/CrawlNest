@@ -56,5 +56,5 @@ export const loginPixiv = async (
   }
 
   // 等待主页面加载完成
-  await page.waitForSelector('div[id="root"]', { timeout: 60000 });
+  await page.waitForSelector('div[id="root"]', { timeout: 600000 });
 };

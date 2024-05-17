@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { Response } from 'express';
 import { CrawlRankingVerification } from './dto/ranking.dto';
+import { EventGateway } from '../socket/socket.controller';
 
 import puppeteer, { Page } from 'puppeteer-core';
 import * as fs from 'fs';
@@ -11,6 +12,9 @@ import { download } from '../../utils/download';
 
 @Injectable()
 export class RankingService {
+  @Inject(EventGateway)
+  private readonly eventGateway: EventGateway;
+
   /**
    * 检测路径是否正确
    * @param path
@@ -54,11 +58,11 @@ export class RankingService {
       await this.checkPathExists(executablePath, '浏览器路径不存在');
     } catch (error) {
       // 在路径不存在时，立即返回错误响应
-      return res.status(400).json(error.message);
+      return res.status(400).json({ message: error.message });
     }
 
     const headlessBoolean = !(headless === 'false' ? false : Boolean(headless));
-    const useProxyBoolean = !(useProxy === 'false' ? false : Boolean(useProxy));
+    const useProxyBoolean = useProxy === 'false' ? false : Boolean(useProxy);
 
     // 日志文件路径
     const logFolderPath = `C:/Users/${process.env.USERNAME}/AppData/Local/log`;
@@ -101,7 +105,7 @@ export class RankingService {
     }
 
     // 等待2秒钟
-    await delay(2000);
+    await delay(3000);
 
     /**
      * 根据页数循环下载图片数据
@@ -121,6 +125,17 @@ export class RankingService {
         // 报错后关闭浏览器
         await browser.close();
         // 返回报错信息
+        const logMessages = {
+          message: `下载图片失败 ${err.message}`,
+          state: 'error',
+        };
+
+        this.eventGateway.sendMessageUser(
+          'log-message',
+          'electron-scoket',
+          logMessages,
+        );
+
         return res.status(400).json('下载图片失败');
       }
     }
@@ -129,7 +144,18 @@ export class RankingService {
     await browser.close();
 
     // 循环结束后发送成功请求
-    return res.status(200).json(`已下载第 ${pageStart} 页到第 ${pageEnd} 页`);
+    const logMessages = {
+      message: `已下载 ${pageStart} ~ ${pageEnd} 页的图片`,
+      state: 'success',
+    };
+
+    this.eventGateway.sendMessageUser(
+      'log-message',
+      'electron-scoket',
+      logMessages,
+    );
+
+    return res.status(200).json(`已下载 ${pageStart} ~ ${pageEnd} 页的图片`);
   }
 
   /**
@@ -307,21 +333,58 @@ export class RankingService {
             DownloadTime: timestamp,
           };
 
-          console.log(`图片下载成功：`, JSON.stringify(imageInfo));
+          this.eventGateway.sendMessageUser(
+            'download-message',
+            'electron-scoket',
+            imageInfo,
+          );
+
+          const logMessages = {
+            message: `${imageInfo.number}： 图片 ${replacedUrl} 下载成功`,
+            state: 'success',
+          };
+
+          this.eventGateway.sendMessageUser(
+            'log-message',
+            'electron-scoket',
+            logMessages,
+          );
+          // console.log(`图片下载成功：`, JSON.stringify(imageInfo));
 
           // 将对象转换为 JSON 字符串
           const jsonContent = JSON.stringify(imageInfo);
           // 续写入下载文件信息到txt文件
           fs.writeFile(logPath, jsonContent + '\n', { flag: 'a' }, (err) => {
             if (err) {
-              console.log(`图片 ${replacedUrl} 信息记录失败：`, err);
+              const logMessages = {
+                message: `${imageInfo.number}： 图片 ${replacedUrl} 信息记录失败`,
+                state: 'warning',
+              };
+
+              this.eventGateway.sendMessageUser(
+                'log-message',
+                'electron-scoket',
+                logMessages,
+              );
+              // console.log(`图片 ${replacedUrl} 信息记录失败：`, err);
             }
           });
         } catch (error: any) {
           retries++;
-          console.log(
-            `${error.message}，正在尝试重新下载，重试次数：${retries}`,
+
+          const logMessages = {
+            message: `${'P' + pageNumber + '_' + (i + 1)}： ${error.message}，正在尝试重新下载，重试次数：${retries}`,
+            state: 'warning',
+          };
+
+          this.eventGateway.sendMessageUser(
+            'log-message',
+            'electron-scoket',
+            logMessages,
           );
+          // console.log(
+          //   `${error.message}，正在尝试重新下载，重试次数：${retries}`,
+          // );
 
           // 在第一次重试时尝试替换文件后缀
           if (retries === 1) {
@@ -349,7 +412,17 @@ export class RankingService {
 
       // 下载错误次数超出提示
       if (!success) {
-        console.log(`图片 ${replacedUrl} 无法下载，已达到最大重试次数`);
+        const logMessages = {
+          message: `${'P' + pageNumber + '_' + (i + 1)}： 图片 ${replacedUrl} 无法下载，已达到最大重试次数`,
+          state: 'error',
+        };
+
+        this.eventGateway.sendMessageUser(
+          'log-message',
+          'electron-scoket',
+          logMessages,
+        );
+        // console.log(`图片 ${replacedUrl} 无法下载，已达到最大重试次数`);
       }
     }
   };

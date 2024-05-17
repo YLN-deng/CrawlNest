@@ -30,7 +30,7 @@ export const download = async (
       method: 'GET',
       url: fileUrl,
       responseType: 'stream',
-      timeout: 60000, // 设置超时时间为 60 秒
+      timeout: 600000, // 设置超时时间为 600 秒
       httpsAgent: agent, // 使用代理服务器的 HTTPS 代理
     });
 
@@ -48,6 +48,7 @@ export const download = async (
       });
     });
   } catch (error) {
-    throw new Error(`下载文件 ${fileUrl} 到 ${destination} 失败`); // 将错误重新抛出以便上层代码捕获和处理
+    // console.log('error :>> ', error);
+    throw new Error(`图片 ${fileUrl} 下载失败`); // 将错误重新抛出以便上层代码捕获和处理
   }
 };

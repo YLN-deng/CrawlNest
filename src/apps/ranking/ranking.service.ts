@@ -324,6 +324,7 @@ export class RankingService {
 
           // 构建包含图片信息的对象
           const imageInfo = {
+            type: `${rankingType} 排行`,
             number: 'P' + pageNumber + '_' + (i + 1),
             imageName: imageName,
             destination: destination,

@@ -158,7 +158,9 @@ export class SearchService {
       logMessages,
     );
 
-    return res.status(200).json(`已下载作者 ${searchUser} 第 ${pageStart} ~ ${pageEnd} 页的图片`);
+    return res
+      .status(200)
+      .json(`已下载作者 ${searchUser} 第 ${pageStart} ~ ${pageEnd} 页的图片`);
   }
 
   /**
@@ -305,9 +307,12 @@ export class SearchService {
     );
 
     // 等待作者插画页面加载完成
-    await page.waitForSelector('div div div[class="sc-12rgki1-0 jMEnyM"] div[class="sc-1xvpjbu-0 gXGuur"] div > div:nth-child(3) > div > ul > li', {
-      timeout: 60000,
-    });
+    await page.waitForSelector(
+      'div div div[class="sc-12rgki1-0 jMEnyM"] div[class="sc-1xvpjbu-0 gXGuur"] div > div:nth-child(3) > div > ul > li',
+      {
+        timeout: 60000,
+      },
+    );
 
     // 等待2秒钟
     await delay(2000);
@@ -392,7 +397,18 @@ export class SearchService {
 
       const timestamp = new Date().toLocaleString(); // 获取当前的时间
       let replacedUrl = illustrationData[i].replacedUrl; // 图片下载地址
-      const title = illustrationData[i].title; // 图片标题
+      // 格式化标题
+      const removeHashAndSuffix = (str) => {
+        // 去掉 #
+        let result = str.replace('#', '');
+        // 去掉 - 及其后面的部分
+        const dashIndex = result.indexOf(' - ');
+        if (dashIndex !== -1) {
+          result = result.substring(0, dashIndex);
+        }
+        return result;
+      };
+      const title = removeHashAndSuffix(illustrationData[i].title); // 图片标题
 
       /**
        * 设置文件名，可以根据需要自定义
@@ -424,7 +440,7 @@ export class SearchService {
 
           // 构建包含图片信息的对象
           const imageInfo = {
-            type: `${searchUser} 搜索`,
+            type: '搜索',
             number: 'P' + pageNumber + '_' + (i + 1),
             imageName: imageName,
             destination: destination,

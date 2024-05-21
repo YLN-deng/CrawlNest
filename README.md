@@ -1,3 +1,4 @@
+
 <p align="center">
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
 </p>
@@ -22,17 +23,42 @@
   <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
   [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
-## Description
+## 应用描述
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+[Nest](https://github.com/nestjs/nest) + [puppeteer-core](https://github.com/puppeteer/puppeteer/tree/main)  自动化爬虫后端分离
 
-## Installation
+前端 Electron 地址： [点击跳转](https://github.com/YLN-deng/CrawlElectron)
+
+## 功能实现
+
+* 爬取排行榜图片
+* 爬取指定作者插画
+* 图片下载日志管理
+* 自定义设置功能
+
+
+## 技术栈
+
+*  nestjs
+*  typescript
+*  puppeteer-core
+*  socket io
+*  webpack
+*  class-validator
+*  axios
+*  socks-proxy-agent
+* class-validator
+*  rxjs
+* reflect-metadata
+
+
+## 安装
 
 ```bash
 $ npm install
 ```
 
-## Running the app
+## 运行应用程序
 
 ```bash
 # development
@@ -45,7 +71,17 @@ $ npm run start:dev
 $ npm run start:prod
 ```
 
-## Test
+## 打包运行程序
+
+```bash
+# build
+$ npm run build
+
+# build mode
+$ node ./dist/main.js
+```
+
+## 测试
 
 ```bash
 # unit tests
@@ -58,16 +94,3 @@ $ npm run test:e2e
 $ npm run test:cov
 ```
 
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](LICENSE).

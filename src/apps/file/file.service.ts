@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  HttpException,
-  HttpStatus,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import * as fs from 'fs';
 import * as readline from 'readline';
 import { promisify } from 'util';
@@ -133,54 +128,62 @@ export class FileService {
    * @param filePath
    * @param jsonObject
    */
-  async deleteJsonLine(filePath: string, jsonObject: object): Promise<string> {
+  async deleteJsonLine(filePath, jsonObject) {
+    // 记录开始时间
     const startTime = Date.now();
+    // 临时文件路径
     const tempFilePath = `${filePath}.tmp`;
+    // 创建文件读取流
     const fileStream = fs.createReadStream(filePath);
+    // 使用 readline 逐行读取文件内容
     const rl = readline.createInterface({
       input: fileStream,
       crlfDelay: Infinity,
     });
 
-    const writeStream = fs.createWriteStream(tempFilePath);
+    // 创建写入流，并显式设置文件权限
+    const writeStream = fs.createWriteStream(tempFilePath, { mode: 0o666 });
+    // 将 JSON 对象转换为字符串
     const jsonString = JSON.stringify(jsonObject);
 
-    let linesProcessed = 0;
-    let linesDeleted = 0;
-
     try {
+      // 使用 for await 逐行读取文件内容
       for await (const line of rl) {
-        linesProcessed++;
+        // 如果当前行不是要删除的 JSON 字符串，则写入临时文件
         if (line.trim() !== jsonString) {
           writeStream.write(line + '\n');
-        } else {
-          linesDeleted++;
         }
       }
 
+      // 等待写入流结束
       await new Promise((resolve, reject) => {
         writeStream.end(resolve);
         writeStream.on('error', reject);
       });
 
+      fileStream.close();
+      rl.close();
+
+      // 删除原始文件
       await unlinkAsync(filePath);
+      // 将临时文件重命名为原始文件
       await renameAsync(tempFilePath, filePath);
 
+      // 记录结束时间
       const endTime = Date.now();
+      // 返回删除成功的信息
       return `删除成功, 耗时 ${endTime - startTime} ms`;
     } catch (error) {
-      // console.log('处理文件时出错', error);
-      // 发生错误时清理临时文件
+      // 如果处理文件时出错，记录错误信息
+      console.error('处理文件时出错', error);
+      // 清理临时文件
       try {
         await unlinkAsync(tempFilePath);
       } catch (cleanupError) {
-        // console.log('清理临时文件时出错', cleanupError);
+        console.error('清理临时文件时出错', cleanupError);
       }
       // 抛出自定义错误
-      throw new HttpException(
-        '文件处理时发生错误',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new Error('文件处理时发生错误');
     } finally {
       // 确保流正确关闭
       rl.close();

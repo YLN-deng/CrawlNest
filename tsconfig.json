@@ -20,9 +20,9 @@
     "noFallthroughCasesInSwitch": false,
     // 路径别名映射
     "paths": {
-      "@apps/*": ["./src/apps/*"],
-      "@utils/*": ["./src/utils/*"],
-      "@error/*": ["./src/error/*"],
+      "@apps/*": ["src/apps/*"],
+      "@utils/*": ["src/utils/*"],
+      "@error/*": ["src/error/*"],
     }
   }
 }

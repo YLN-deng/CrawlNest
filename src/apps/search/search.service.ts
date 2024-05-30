@@ -7,8 +7,8 @@ import puppeteer, { Page } from 'puppeteer-core';
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { loginPixiv, delay } from '../../utils/login';
-import { download } from '../../utils/download';
+import { loginPixiv, delay } from '@utils/login';
+import { download } from '@utils/download';
 
 @Injectable()
 export class SearchService {
@@ -80,7 +80,13 @@ export class SearchService {
     const browser = await puppeteer.launch({
       executablePath: executablePath, // 要打开的浏览器地址
       headless: headlessBoolean, // 可视化界面
-      args: ['--start-maximized'], // 启动参数，确保浏览器最大化
+      args: [
+        '--start-maximized', // 启动参数，确保浏览器最大化
+        '--disable-infobars', // 禁用信息栏
+        '--no-default-browser-check', // 禁用默认浏览器检查
+        '--no-first-run', // 禁用首次运行提示
+        '--disable-extensions', // 禁用扩展
+      ],
     });
 
     const page = await browser.newPage();
@@ -90,7 +96,7 @@ export class SearchService {
     // 获取屏幕大小
     const { width, height } = await page.evaluate(() => ({
       width: window.screen.width,
-      height: window.screen.height,
+      height: window.screen.height - 120,
     }));
 
     // 将页面视口设置为屏幕大小

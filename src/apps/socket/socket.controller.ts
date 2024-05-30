@@ -56,7 +56,7 @@ export class EventGateway {
   sendMessageUser(event: string, userId: string, content: any) {
     // 获取客户端连接对象
     const client = this.clientConnectionService.getClient(userId);
-    if (userId) {
+    if (client) {
       // 向客户端指定用户发送消息
       client.emit(event, content);
     } else {

@@ -7,8 +7,8 @@ import puppeteer, { Page } from 'puppeteer-core';
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { loginPixiv, delay } from '../../utils/login';
-import { download } from '../../utils/download';
+import { loginPixiv, delay } from '@utils/login';
+import { download } from '@utils/download';
 
 @Injectable()
 export class RankingService {
@@ -81,7 +81,13 @@ export class RankingService {
     const browser = await puppeteer.launch({
       executablePath: executablePath, // 要打开的浏览器地址
       headless: headlessBoolean, // 可视化界面
-      args: ['--start-maximized'], // 启动参数，确保浏览器最大化
+      args: [
+        '--start-maximized', // 启动参数，确保浏览器最大化
+        '--disable-infobars', // 禁用信息栏
+        '--no-default-browser-check', // 禁用默认浏览器检查
+        '--no-first-run', // 禁用首次运行提示
+        '--disable-extensions', // 禁用扩展
+      ],
     });
 
     const page = await browser.newPage();
@@ -89,7 +95,7 @@ export class RankingService {
     // 获取屏幕大小
     const { width, height } = await page.evaluate(() => ({
       width: window.screen.width,
-      height: window.screen.height,
+      height: window.screen.height - 120,
     }));
 
     // 将页面视口设置为屏幕大小
@@ -132,7 +138,7 @@ export class RankingService {
 
         this.eventGateway.sendMessageUser(
           'log-message',
-          'electron-scoket',
+          'electron-socket',
           logMessages,
         );
 
@@ -151,7 +157,7 @@ export class RankingService {
 
     this.eventGateway.sendMessageUser(
       'log-message',
-      'electron-scoket',
+      'electron-socket',
       logMessages,
     );
 
@@ -162,7 +168,12 @@ export class RankingService {
    * 根据页数下载图片
    * @ranking
    * @param page 浏览器页面
+   * @param rankingType
    * @param pageNumber 下载页数
+   * @param imagePath
+   * @param logPath
+   * @param useProxyBoolean
+   * @param port
    */
   downloadRankingImages = async (
     page: Page,
@@ -226,7 +237,7 @@ export class RankingService {
     }
 
     // 检测 ranking-item 是否存在，等待排行榜页面 ranking-item 加载完成
-    await page.waitForSelector('section[class="ranking-item"]', {
+    await page.waitForSelector('div[class = "layout-body"]', {
       timeout: 60000,
     });
 
@@ -285,7 +296,7 @@ export class RankingService {
     // 遍历图片地址数组，下载图片到本地
     for (let i = 0; i < rankingData.length; i++) {
       // 添加4秒延迟，以免太快地下载
-      await delay(4000);
+      await delay(3000);
 
       // 获取时间
       const timestamp = new Date().toLocaleString();
